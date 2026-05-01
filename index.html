@@ -281,7 +281,7 @@
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
  
-<!-- COMPONENTE: Material dental mejorado -->
+<!-- COMPONENTE: Mantiene personaje completo, oculta esqueleto -->
 <script>
 AFRAME.registerComponent('tooth-material', {
     init: function () {
@@ -290,37 +290,49 @@ AFRAME.registerComponent('tooth-material', {
             var mesh = el.getObject3D('mesh');
             if (!mesh) return;
             
-            var largestMesh = null;
-            var largestSize = 0;
-            
-            // PRIMERO: encontrar el mesh más grande (el diente real)
-            mesh.traverse(function (node) {
-                if (node.isMesh && node.geometry) {
-                    node.geometry.computeBoundingBox();
-                    var size = node.geometry.boundingBox.getSize(new THREE.Vector3());
-                    var volume = size.x * size.y * size.z;
-                    if (volume > largestSize) {
-                        largestSize = volume;
-                        largestMesh = node;
-                    }
-                }
-            });
-            
-            // SEGUNDO: ocultar todo excepto el mesh más grande
             mesh.traverse(function (node) {
                 if (node.isMesh) {
-                    if (node !== largestMesh) {
-                        node.visible = false; // Oculta huesos y geometrías pequeñas
-                    } else {
-                        // Aplicar material al diente principal
-                        node.material = new THREE.MeshStandardMaterial({
-                            color: 0xf5efe6,
-                            roughness: 0.3,
-                            metalness: 0.05,
-                            side: THREE.DoubleSide,
-                            transparent: false,
-                            depthWrite: true
-                        });
+                    var name = node.name.toLowerCase();
+                    var material = node.material;
+                    
+                    // OCULTAR solo huesos y controladores por nombre
+                    if (name.includes('bone') || 
+                        name.includes('armature') || 
+                        name.includes('rig') || 
+                        name.includes('controller') ||
+                        name.includes('ik_handle') ||
+                        name.includes('fk_handle') ||
+                        name.includes('root')) {
+                        node.visible = false;
+                        return;
+                    }
+                    
+                    // OCULTAR geometrías tipo "palos" (huesos visuales)
+                    if (node.geometry && node.geometry.type === 'CylinderGeometry') {
+                        node.visible = false;
+                        return;
+                    }
+                    
+                    // SI ES EL PERSONAJE (diente, corona, manos, ojos)
+                    // Mantener visible y aplicar material
+                    if (material && material.color) {
+                        var c = material.color;
+                        // Si es negro muy oscuro (base/sombra), aclararlo
+                        if (c.r < 0.2 && c.g < 0.2 && c.b < 0.2) {
+                            node.material = new THREE.MeshStandardMaterial({
+                                color: 0xf5efe6,
+                                roughness: 0.3,
+                                metalness: 0.05,
+                                side: THREE.DoubleSide,
+                                transparent: false,
+                                depthWrite: true
+                            });
+                        } else {
+                            // Mantener material original pero mejorar
+                            node.material.side = THREE.DoubleSide;
+                            node.material.depthWrite = true;
+                            node.material.needsUpdate = true;
+                        }
                     }
                 }
             });
