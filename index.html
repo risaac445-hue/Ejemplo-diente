@@ -281,7 +281,7 @@
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
  
-<!-- COMPONENTE: Material blanco dental -->
+<!-- COMPONENTE: Material dental mejorado -->
 <script>
 AFRAME.registerComponent('tooth-material', {
     init: function () {
@@ -291,11 +291,33 @@ AFRAME.registerComponent('tooth-material', {
             if (!mesh) return;
             mesh.traverse(function (node) {
                 if (node.isMesh) {
-                    node.material = new THREE.MeshLambertMaterial({
-                        color: 0xf8f4ed,
-                        side: THREE.DoubleSide,
-                        flatShading: false
-                    });
+                    // Detectar si es una caja negra o fondo
+                    if (node.material && node.material.color) {
+                        var c = node.material.color;
+                        // Si es negro o muy oscuro → OCULTARLO
+                        if (c.r < 0.15 && c.g < 0.15 && c.b < 0.15) {
+                            node.visible = false;
+                            return;
+                        }
+                    }
+                    
+                    // Si NO tiene textura, aplicar blanco marfil
+                    if (!node.material.map) {
+                        node.material = new THREE.MeshStandardMaterial({
+                            color: 0xf5efe6,
+                            roughness: 0.3,
+                            metalness: 0.05,
+                            side: THREE.DoubleSide,
+                            transparent: true,
+                            depthWrite: true
+                        });
+                    } else {
+                        // Si TIENE textura, mantenerla y activar transparencia
+                        node.material.transparent = true;
+                        node.material.depthWrite = true;
+                        node.material.side = THREE.DoubleSide;
+                        node.material.needsUpdate = true;
+                    }
                 }
             });
         });
@@ -317,21 +339,24 @@ AFRAME.registerComponent('tooth-material', {
             <a-gltf-model
                 id="modelo-3d"
                 src="./tooth_3d_model.glb"
-                scale="0.05 0.05 0.05"
+                scale="0.12 0.12 0.12"
                 position="0 0.03 0.08"
                 rotation="90 0 0"
                 animation-mixer="clip: *; timeScale: 1; loop: repeat;"
+                tooth-material
             ></a-gltf-model>
          
+            <!-- SOMBRA: más pequeña y transparente -->
             <a-circle 
-                position="0 0.01 0.07" 
+                position="0 0.005 0.07" 
                 rotation="-90 0 0" 
-                radius="0.06" 
+                radius="0.03" 
                 color="#000000" 
-                opacity="0.25"
+                opacity="0.15"
                 material="transparent: true; depthWrite: false;"
             ></a-circle>
          
+            <!-- ILUMINACIÓN -->
             <a-light type="directional" intensity="3" position="1 4 2" color="#ffffff"></a-light>
             <a-light type="directional" intensity="2" position="-1 1 2" color="#ffffff"></a-light>
             <a-light type="directional" intensity="1" position="0 0.5 -1" color="#ffe0cc"></a-light>
