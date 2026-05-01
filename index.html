@@ -310,7 +310,7 @@
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
  
-<!-- COMPONENTE: Material dental mejorado (OCULTA ESQUELETO) -->
+<!-- COMPONENTE: Respeta texturas, oculta esqueleto y fondo negro -->
 <script>
 AFRAME.registerComponent('tooth-material', {
     init: function () {
@@ -318,9 +318,11 @@ AFRAME.registerComponent('tooth-material', {
         el.addEventListener('model-loaded', function () {
             var mesh = el.getObject3D('mesh');
             if (!mesh) return;
+            
             mesh.traverse(function (node) {
                 if (node.isMesh) {
                     var name = node.name.toLowerCase();
+                    var material = node.material;
                     
                     // OCULTAR huesos y controladores por nombre
                     if (name.includes('bone') || 
@@ -335,32 +337,41 @@ AFRAME.registerComponent('tooth-material', {
                         return;
                     }
                     
-                    // Detectar si es una caja negra o fondo
-                    if (node.material && node.material.color) {
-                        var c = node.material.color;
-                        // Si es negro o muy oscuro → OCULTARLO
+                    // OCULTAR geometrías tipo cilindro (huesos visuales)
+                    if (node.geometry && 
+                        (node.geometry.type === 'CylinderGeometry' || 
+                         node.geometry.type === 'CylinderBufferGeometry')) {
+                        node.visible = false;
+                        return;
+                    }
+                    
+                    // SI TIENE TEXTURA → MANTENERLA (NO TOCAR)
+                    if (material.map) {
+                        material.transparent = true;
+                        material.depthWrite = true;
+                        material.side = THREE.DoubleSide;
+                        material.needsUpdate = true;
+                        return;
+                    }
+                    
+                    // SI ES COLOR NEGRO/MUY OSCURO → OCULTAR (fondo/base)
+                    if (material.color) {
+                        var c = material.color;
                         if (c.r < 0.15 && c.g < 0.15 && c.b < 0.15) {
                             node.visible = false;
                             return;
                         }
                     }
                     
-                    // Si NO tiene textura, aplicar blanco marfil
-                    if (!node.material.map) {
-                        node.material = new THREE.MeshStandardMaterial({
-                            color: 0xf5efe6,
-                            roughness: 0.3,
-                            metalness: 0.05,
-                            side: THREE.DoubleSide,
-                            transparent: true,
-                            depthWrite: true
-                        });
-                    } else {
-                        // Si TIENE textura, mantenerla y activar transparencia
-                        node.material.transparent = true;
-                        node.material.depthWrite = true;
-                        node.material.side = THREE.DoubleSide;
-                        node.material.needsUpdate = true;
+                    // SOLO si NO tiene textura Y NO es negro → blanco marfil suave
+                    if (!material.map) {
+                        material.color.set(0xf5efe6);
+                        material.roughness = 0.3;
+                        material.metalness = 0.05;
+                        material.side = THREE.DoubleSide;
+                        material.transparent = true;
+                        material.depthWrite = true;
+                        material.needsUpdate = true;
                     }
                 }
             });
