@@ -391,14 +391,12 @@ document.addEventListener('DOMContentLoaded', function() {
     mindar-image="imageTargetSrc: ./targets_hector.mind; maxTrack: 1; filterMinCF: 0.0001; filterBeta: 0.01; warmupTolerance: 10; missTolerance: 10;"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    renderer="colorManagement: true; antialias: false; physicallyCorrectLights: false; alpha: true;"
-    embedded
+    renderer="colorManagement: true; antialias: false; physicallyCorrectLights: false;"
 >
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
- 
+
     <a-entity mindar-image-target="targetIndex: 0">
- 
-        <!-- MODELO DEL DIENTE ANIMADO -->
+     
         <a-gltf-model
             id="modelo-3d"
             src="./tooth_3d_model.glb"
@@ -408,8 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
             animation-mixer="clip: *; timeScale: 1; loop: repeat;"
             tooth-material
         ></a-gltf-model>
- 
-        <!-- SOMBRA SUTIL -->
+     
         <a-circle 
             position="0 0.005 0.07" 
             rotation="-90 0 0" 
@@ -418,15 +415,14 @@ document.addEventListener('DOMContentLoaded', function() {
             opacity="0.15"
             material="transparent: true; depthWrite: false;"
         ></a-circle>
- 
-        <!-- ILUMINACIÓN -->
+     
         <a-light type="directional" intensity="3" position="1 4 2" color="#ffffff"></a-light>
         <a-light type="directional" intensity="2" position="-1 1 2" color="#ffffff"></a-light>
         <a-light type="directional" intensity="1" position="0 0.5 -1" color="#ffe0cc"></a-light>
- 
+     
     </a-entity>
- 
-    <a-light type="ambient" intensity="1.8" color="#ffffff"></a-light>
+
+    <a-light type="ambient" intensity="1.2" color="#ffffff"></a-light>
 </a-scene>
  
 <!-- LÓGICA DE CONTROL -->
