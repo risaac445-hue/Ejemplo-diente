@@ -310,7 +310,7 @@
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
  
-<!-- COMPONENTE: Respeta texturas, oculta esqueleto y fondo negro -->
+<!-- COMPONENTE: Oculta esqueleto y caja negra, NO modifica materiales -->
 <script>
 AFRAME.registerComponent('tooth-material', {
     init: function () {
@@ -322,9 +322,8 @@ AFRAME.registerComponent('tooth-material', {
             mesh.traverse(function (node) {
                 if (node.isMesh) {
                     var name = node.name.toLowerCase();
-                    var material = node.material;
                     
-                    // OCULTAR huesos y controladores por nombre
+                    // OCULTAR huesos y controladores
                     if (name.includes('bone') || 
                         name.includes('armature') || 
                         name.includes('rig') || 
@@ -337,7 +336,7 @@ AFRAME.registerComponent('tooth-material', {
                         return;
                     }
                     
-                    // OCULTAR geometrías tipo cilindro (huesos visuales)
+                    // OCULTAR cilindros (huesos visuales)
                     if (node.geometry && 
                         (node.geometry.type === 'CylinderGeometry' || 
                          node.geometry.type === 'CylinderBufferGeometry')) {
@@ -345,55 +344,26 @@ AFRAME.registerComponent('tooth-material', {
                         return;
                     }
                     
-                    // SI TIENE TEXTURA → MANTENERLA (NO TOCAR)
-                    if (material.map) {
-                        material.transparent = true;
-                        material.depthWrite = true;
-                        material.side = THREE.DoubleSide;
-                        material.needsUpdate = true;
-                        return;
-                    }
-                    
-                    // SI ES COLOR NEGRO/MUY OSCURO → OCULTAR (fondo/base)
-                    if (material.color) {
-                        var c = material.color;
+                    // OCULTAR caja negra / fondo oscuro
+                    if (node.material && node.material.color) {
+                        var c = node.material.color;
                         if (c.r < 0.15 && c.g < 0.15 && c.b < 0.15) {
                             node.visible = false;
                             return;
                         }
                     }
                     
-                    // SOLO si NO tiene textura Y NO es negro → blanco marfil suave
-                    if (!material.map) {
-                        material.color.set(0xf5efe6);
-                        material.roughness = 0.3;
-                        material.metalness = 0.05;
-                        material.side = THREE.DoubleSide;
-                        material.transparent = true;
-                        material.depthWrite = true;
-                        material.needsUpdate = true;
+                    // NO TOCAR MATERIALES con textura o color
+                    if (node.material) {
+                        node.material.side = THREE.DoubleSide;
+                        node.material.transparent = true;
+                        node.material.depthWrite = true;
+                        node.material.needsUpdate = true;
                     }
                 }
             });
         });
     }
-});
-</script>
- 
-<!-- CORRECCIÓN DE FONDO TRANSPARENTE -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        var canvas = document.querySelector('canvas');
-        if (canvas) {
-            canvas.style.background = 'transparent';
-        }
-        var scene = document.querySelector('a-scene');
-        if (scene && scene.renderer) {
-            scene.renderer.setClearColor(new THREE.Color(0x000000), 0);
-            scene.renderer.alpha = true;
-        }
-    }, 1000);
 });
 </script>
  
@@ -415,6 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
             position="0 0.03 0.08"
             rotation="90 0 0"
             animation-mixer="clip: *; timeScale: 1; loop: repeat;"
+            tooth-material
         ></a-gltf-model>
      
         <a-circle 
