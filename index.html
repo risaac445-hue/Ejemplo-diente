@@ -310,7 +310,7 @@
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
  
-<!-- COMPONENTE: Mantiene personaje completo, oculta esqueleto -->
+<!-- COMPONENTE: Material dental mejorado (OCULTA ESQUELETO) -->
 <script>
 AFRAME.registerComponent('tooth-material', {
     init: function () {
@@ -318,49 +318,49 @@ AFRAME.registerComponent('tooth-material', {
         el.addEventListener('model-loaded', function () {
             var mesh = el.getObject3D('mesh');
             if (!mesh) return;
-            
             mesh.traverse(function (node) {
                 if (node.isMesh) {
                     var name = node.name.toLowerCase();
-                    var material = node.material;
                     
-                    // OCULTAR solo huesos y controladores por nombre
+                    // OCULTAR huesos y controladores por nombre
                     if (name.includes('bone') || 
                         name.includes('armature') || 
                         name.includes('rig') || 
                         name.includes('controller') ||
-                        name.includes('ik_handle') ||
-                        name.includes('fk_handle') ||
-                        name.includes('root')) {
+                        name.includes('ik_') ||
+                        name.includes('fk_') ||
+                        name.includes('root') ||
+                        name.includes('handle')) {
                         node.visible = false;
                         return;
                     }
                     
-                    // OCULTAR geometrías tipo "palos" (huesos visuales)
-                    if (node.geometry && node.geometry.type === 'CylinderGeometry') {
-                        node.visible = false;
-                        return;
-                    }
-                    
-                    // SI ES EL PERSONAJE (diente, corona, manos, ojos)
-                    if (material && material.color) {
-                        var c = material.color;
-                        // Si es negro muy oscuro (base/sombra), aclararlo
-                        if (c.r < 0.2 && c.g < 0.2 && c.b < 0.2) {
-                            node.material = new THREE.MeshStandardMaterial({
-                                color: 0xf5efe6,
-                                roughness: 0.3,
-                                metalness: 0.05,
-                                side: THREE.DoubleSide,
-                                transparent: false,
-                                depthWrite: true
-                            });
-                        } else {
-                            // Mantener material original pero mejorar
-                            node.material.side = THREE.DoubleSide;
-                            node.material.depthWrite = true;
-                            node.material.needsUpdate = true;
+                    // Detectar si es una caja negra o fondo
+                    if (node.material && node.material.color) {
+                        var c = node.material.color;
+                        // Si es negro o muy oscuro → OCULTARLO
+                        if (c.r < 0.15 && c.g < 0.15 && c.b < 0.15) {
+                            node.visible = false;
+                            return;
                         }
+                    }
+                    
+                    // Si NO tiene textura, aplicar blanco marfil
+                    if (!node.material.map) {
+                        node.material = new THREE.MeshStandardMaterial({
+                            color: 0xf5efe6,
+                            roughness: 0.3,
+                            metalness: 0.05,
+                            side: THREE.DoubleSide,
+                            transparent: true,
+                            depthWrite: true
+                        });
+                    } else {
+                        // Si TIENE textura, mantenerla y activar transparencia
+                        node.material.transparent = true;
+                        node.material.depthWrite = true;
+                        node.material.side = THREE.DoubleSide;
+                        node.material.needsUpdate = true;
                     }
                 }
             });
