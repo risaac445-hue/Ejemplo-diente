@@ -312,31 +312,40 @@ AFRAME.registerComponent('tooth-material', {
 >
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
  
-    <a-entity mindar-image-target="targetIndex: 0">
- 
-    <a-gltf-model
-        id="modelo-3d"
-        src="./tooth_3d_model.glb"
-        scale="0.015 0.015 0.015"
-        position="0 0.06 0.08"
-        rotation="-90 0 0"
-        animation-mixer="clip: *; timeScale: 1; loop: repeat;"
-    ></a-gltf-model>
- 
-    <a-circle 
-        position="0 0 0.07" 
-        rotation="-90 0 0" 
-        radius="0.08" 
-        color="#000000" 
-        opacity="0.2"
-        material="transparent: true; depthWrite: false;"
-    ></a-circle>
- 
-    <a-light type="directional" intensity="3" position="1 4 2" color="#ffffff"></a-light>
-    <a-light type="directional" intensity="2" position="-1 1 2" color="#ffffff"></a-light>
-    <a-light type="ambient" intensity="1.5" color="#ffffff"></a-light>
- 
-</a-entity>
+        <a-entity mindar-image-target="targetIndex: 0">
+     
+        <!--
+            CORRECCIONES:
+            - rotation="-90 0 0": Pone el diente DE PIE sobre la tarjeta
+            - scale="0.05 0.05 0.05": 16 VECES más grande que antes
+            - position="0 0.03 0.08": Centrado, elevado, visible
+            - Los "pies" del diente deben tocar la tarjeta
+        -->
+        <a-gltf-model
+            id="modelo-3d"
+            src="./tooth_3d_model.glb"
+            scale="0.05 0.05 0.05"
+            position="0 0.03 0.08"
+            rotation="-90 0 0"
+            animation-mixer="clip: *; timeScale: 1; loop: repeat;"
+        ></a-gltf-model>
+     
+        <!-- Sombra en la base -->
+        <a-circle 
+            position="0 0.01 0.07" 
+            rotation="-90 0 0" 
+            radius="0.06" 
+            color="#000000" 
+            opacity="0.25"
+            material="transparent: true; depthWrite: false;"
+        ></a-circle>
+     
+        <!-- Iluminación mejorada -->
+        <a-light type="directional" intensity="3" position="1 4 2" color="#ffffff"></a-light>
+        <a-light type="directional" intensity="2" position="-1 1 2" color="#ffffff"></a-light>
+        <a-light type="directional" intensity="1" position="0 0.5 -1" color="#ffe0cc"></a-light>
+     
+    </a-entity>
  
     <a-light type="ambient" intensity="1.2" color="#ffffff"></a-light>
 </a-scene>
