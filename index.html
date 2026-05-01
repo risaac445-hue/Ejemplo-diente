@@ -314,41 +314,29 @@ AFRAME.registerComponent('tooth-material', {
  
     <a-entity mindar-image-target="targetIndex: 0">
  
-        <!--
-            ⚠️ ESCALA CORREGIDA: scale="0.003 0.003 0.003"
-            Antes estaba en 0.08 y el diente tapaba toda la cámara.
-            Ahora es 26 VECES MÁS PEQUEÑO.
-            
-            Si aún se ve grande: prueba 0.001
-            Si se ve chico:     prueba 0.005
-            
-            position="0 0.02 0.02": centrado y ligeramente elevado
-            rotation="0 0 0": sin rotación extra
-            animation-mixer: reproduce la animación del diente
-        -->
-        <a-gltf-model
+    <a-gltf-model
         id="modelo-3d"
         src="./tooth_3d_model.glb"
-        scale="0.003 0.003 0.003"
-        position="0 0.02 0.02"
-        rotation="0 0 0"
+        scale="0.015 0.015 0.015"
+        position="0 0.06 0.08"
+        rotation="-90 0 0"
         animation-mixer="clip: *; timeScale: 1; loop: repeat;"
-        ></a-gltf-model>
+    ></a-gltf-model>
  
-        <!-- Sombra sutil -->
-        <a-circle 
-            position="0 0 0.01" 
-            rotation="-90 0 0" 
-            radius="0.05" 
-            color="#000000" 
-            opacity="0.15"
-            material="transparent: true; depthWrite: false;"
-        ></a-circle>
+    <a-circle 
+        position="0 0 0.07" 
+        rotation="-90 0 0" 
+        radius="0.08" 
+        color="#000000" 
+        opacity="0.2"
+        material="transparent: true; depthWrite: false;"
+    ></a-circle>
  
-        <!-- Iluminación -->
-        <a-light type="directional" intensity="2" position="1 3 1" color="#ffffff"></a-light>
-        <a-light type="directional" intensity="0.5" position="-1 -1 1" color="#c8e6f5"></a-light>
-    </a-entity>
+    <a-light type="directional" intensity="3" position="1 4 2" color="#ffffff"></a-light>
+    <a-light type="directional" intensity="2" position="-1 1 2" color="#ffffff"></a-light>
+    <a-light type="ambient" intensity="1.5" color="#ffffff"></a-light>
+ 
+</a-entity>
  
     <a-light type="ambient" intensity="1.2" color="#ffffff"></a-light>
 </a-scene>
