@@ -289,34 +289,38 @@ AFRAME.registerComponent('tooth-material', {
         el.addEventListener('model-loaded', function () {
             var mesh = el.getObject3D('mesh');
             if (!mesh) return;
+            
+            var largestMesh = null;
+            var largestSize = 0;
+            
+            // PRIMERO: encontrar el mesh más grande (el diente real)
+            mesh.traverse(function (node) {
+                if (node.isMesh && node.geometry) {
+                    node.geometry.computeBoundingBox();
+                    var size = node.geometry.boundingBox.getSize(new THREE.Vector3());
+                    var volume = size.x * size.y * size.z;
+                    if (volume > largestSize) {
+                        largestSize = volume;
+                        largestMesh = node;
+                    }
+                }
+            });
+            
+            // SEGUNDO: ocultar todo excepto el mesh más grande
             mesh.traverse(function (node) {
                 if (node.isMesh) {
-                    // Detectar si es una caja negra o fondo
-                    if (node.material && node.material.color) {
-                        var c = node.material.color;
-                        // Si es negro o muy oscuro → OCULTARLO
-                        if (c.r < 0.15 && c.g < 0.15 && c.b < 0.15) {
-                            node.visible = false;
-                            return;
-                        }
-                    }
-                    
-                    // Si NO tiene textura, aplicar blanco marfil
-                    if (!node.material.map) {
+                    if (node !== largestMesh) {
+                        node.visible = false; // Oculta huesos y geometrías pequeñas
+                    } else {
+                        // Aplicar material al diente principal
                         node.material = new THREE.MeshStandardMaterial({
                             color: 0xf5efe6,
                             roughness: 0.3,
                             metalness: 0.05,
                             side: THREE.DoubleSide,
-                            transparent: true,
+                            transparent: false,
                             depthWrite: true
                         });
-                    } else {
-                        // Si TIENE textura, mantenerla y activar transparencia
-                        node.material.transparent = true;
-                        node.material.depthWrite = true;
-                        node.material.side = THREE.DoubleSide;
-                        node.material.needsUpdate = true;
                     }
                 }
             });
@@ -363,7 +367,7 @@ AFRAME.registerComponent('tooth-material', {
          
         </a-entity>
  
-    <a-light type="ambient" intensity="1.2" color="#ffffff"></a-light>
+    <a-light type="ambient" intensity="1.8" color="#ffffff"></a-light>
 </a-scene>
  
 <!-- LÓGICA -->
